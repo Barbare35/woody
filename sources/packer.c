@@ -4,7 +4,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
-
 #include <woody.h>
 #include <const.h>
 
@@ -39,7 +38,8 @@ static void		*st_mem_proj(char *filename, unsigned int *mem_size)
 		perror("lseek");
 		exit(1);
 	}
-	if ((ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
+	if ((ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, \
+					fd, 0)) == MAP_FAILED)
 	{
 		perror("mmap error");
 		exit(1);
@@ -59,7 +59,7 @@ void			packer(char *filename)
 		&& ((char *)bin)[2] == 0x4C && ((char *)bin)[3] == 0x46)
 	{
 		if (((char *)bin)[4] == ELFCLASS64 && st_check_header(bin))
-			dprintf(1, "Run packer64\n"); // TODO call packer64
+			packer64(bin, size);
 		else if (((char *)bin)[4] == ELFCLASS32)
 			dprintf(1, "%s\n", ERRE_32);
 		else

@@ -1,11 +1,12 @@
 SRC_NAME = main.c \
-			packer.c
+			packer.c \
+			packer64.c \
+			pack64.c
 
-NAME = woody_woodpacker
-
-NAME = woody_woodpacker
+SRC_ASM = loader.s
 
 OBJ_NAME = $(SRC_NAME:.c=.o)
+OBJ_ASM = $(SRC_ASM:.s=.o)
 
 NAME = woody_woodpacker
 
@@ -16,6 +17,9 @@ INC_PATH = ./includes/
 CC = gcc
 CFLAGS = -Wall -Werror -Wextra
 CLIBS =
+
+AC = nasm
+AFLAGS = -f elf64
 
 ifeq ($(DEBUG), basic)
 	CFLAGS += -g
@@ -28,18 +32,23 @@ SRC = $(addprefix $(SRC_PATH),$(SRC_NAME))
 OBJ = $(addprefix $(OBJ_PATH),$(OBJ_NAME))
 INC = $(addprefix -I,$(INC_PATH))
 
+SRCA = $(addprefix $(SRC_PATH),$(SRC_ASM))
+OBJA = $(addprefix $(OBJ_PATH),$(OBJ_ASM))
+
 all: $(NAME)
 
 
-$(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(INC) -o $(NAME) $(OBJ) $(CLIBS)
-
+$(NAME): $(OBJ) $(OBJA)
+	$(CC) $(CFLAGS) $(INC) -o $(NAME) $(OBJ) $(OBJA) $(CLIBS)
 
 all: $(NAME)
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.c
 	@mkdir $(OBJ_PATH) 2> /dev/null || echo "" > /dev/null
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+
+$(OBJA): $(SRCA)
+	$(AC) $(AFLAGS) -o $@ $<
 
 clean:
 	rm -f $(OBJ)
