@@ -66,18 +66,11 @@ void			p64_change_headprog_flags(t_pack *packer)
 	}
 }
 
-Elf64_Shdr		p64_add_headsec(t_pack *packer)
+void			p64_change_header(t_pack *packer)
 {
 	int			i;
-	Elf64_Shdr	new = {0};
 
 	i = 0;
-	new.sh_type = SHT_PROGBITS;
-	new.sh_flags = SHF_ALLOC | SHF_EXECINSTR;
-	new.sh_addr = 0x600000 + packer->loader_offset + packer->align;
-	new.sh_offset = packer->loader_offset + packer->align;
-	new.sh_size = g_loadersize;
-	new.sh_addralign = 16;
 	while (i < packer->headelf->e_shnum)
 	{
 		if (packer->headsec[i].sh_offset >= packer->loader_offset)
@@ -87,14 +80,6 @@ Elf64_Shdr		p64_add_headsec(t_pack *packer)
 		}
 		++i;
 	}
-	packer->last_secload += 1;
-	packer->headelf->e_shnum += 1;
-	packer->headelf->e_shstrndx += 1;
-	return (new);
-}
-
-void			p64_change_header(t_pack *packer)
-{
 	packer->headelf->e_shoff += (g_loadersize + packer->align);
 	packer->headelf->e_entry = (packer->headprog[packer->last_ptload].p_vaddr +\
 							packer->headprog[packer->last_ptload].p_filesz) +\

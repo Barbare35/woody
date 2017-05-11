@@ -38,7 +38,6 @@ void			packer64(void *bin, uint32_t size);
 uint32_t		p64_get_last_ptload(t_pack *packer);
 uint32_t		p64_get_last_secload(t_pack *packer);
 void			p64_change_headprog_flags(t_pack *packer);
-Elf64_Shdr		p64_add_headsec(t_pack *packer);
 void			p64_change_header(t_pack *packer);
 
 /*

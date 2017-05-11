@@ -8,8 +8,7 @@
 
 extern uint32_t	g_loadersize;
 
-static void			st_write_file(t_pack *packer, Elf64_Shdr *new_headsec, \
-									void *endsecoff, uint32_t secsz)
+static void			st_write_file(t_pack *packer)
 {
 	int			fd;
 	uint32_t	i;
@@ -30,11 +29,7 @@ static void			st_write_file(t_pack *packer, Elf64_Shdr *new_headsec, \
 	}
 	write(fd, &loader, g_loadersize - 4);
 	write(fd, &packer->jmp_addr, 4);
-	write(fd, end, (packer->size - packer->loader_offset) - \
-				(((packer->headelf->e_shnum - 1) - packer->last_secload) * \
-				sizeof(Elf64_Shdr)));
-	write(fd, &new_headsec, sizeof(Elf64_Shdr));
-	write(fd, endsecoff, packer->size - secsz);
+	write(fd, end, packer->size - packer->loader_offset);
 	close(fd);
 }
 
@@ -57,7 +52,6 @@ static void			st_prepare_file(t_pack *packer, Elf64_Shdr *new_headsec)
 void				packer64(void *bin, uint32_t size)
 {
 	t_pack			packer;
-	Elf64_Shdr		new_headsec;
 
 	packer.bin = bin;
 	packer.size = size;
@@ -71,7 +65,10 @@ void				packer64(void *bin, uint32_t size)
 					packer.headprog[packer.last_ptload].p_filesz;
 	packer.loader_offset = packer.headprog[packer.last_ptload].p_offset + \
 							packer.headprog[packer.last_ptload].p_filesz;
-	new_headsec = p64_add_headsec(&packer);
 	p64_change_headprog_flags(&packer);
-	st_prepare_file(&packer, &new_headsec);
+	p64_change_header(&packer);
+	packer.jmp_addr = ((packer.headprog[packer.last_ptload].p_vaddr + \
+						packer.headprog[packer.last_ptload].p_filesz) - \
+						packer.last_entry) * -1;
+	st_write_file(&packer);
 }
