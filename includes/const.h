@@ -1,7 +1,7 @@
 #ifndef CONST_H
 # define CONST_H
 
-# define LOAD_MSG_LEN 16
+# define SIZE_VAR_LOADER 8
 
 # define NAME_OUT "woody"
 

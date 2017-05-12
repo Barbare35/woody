@@ -4,6 +4,7 @@
 #include <const.h>
 
 extern uint32_t	g_loadersize;
+extern uint32_t	g_loaderoff;
 
 uint32_t		p64_get_last_ptload(t_pack *packer)
 {
@@ -83,8 +84,29 @@ void			p64_change_header(t_pack *packer)
 	packer->headelf->e_shoff += (g_loadersize + packer->align);
 	packer->headelf->e_entry = (packer->headprog[packer->last_ptload].p_vaddr +\
 							packer->headprog[packer->last_ptload].p_filesz) +\
-							packer->align + LOAD_MSG_LEN;
+							packer->align + g_loaderoff;
 	packer->headprog[packer->last_ptload].p_memsz += g_loadersize;
 	packer->headprog[packer->last_ptload].p_filesz = \
 								packer->headprog[packer->last_ptload].p_memsz;
+}
+
+uint32_t		p64_get_offset_text_load(t_pack *packer)
+{
+	int			i;
+	uint32_t	offset;
+	Elf64_Phdr	*headprog;
+
+	i = 0;
+	offset = 0;
+	headprog = packer->headprog;
+	while (i < packer->headelf->e_phnum)
+	{
+		if (headprog[i].p_type == PT_LOAD && \
+			packer->last_entry >= headprog[i].p_vaddr)
+		{
+			offset = headprog[i].p_vaddr;
+		}
+		++i;
+	}
+	return (offset);
 }

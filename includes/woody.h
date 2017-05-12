@@ -18,6 +18,7 @@ struct			s_pack
 	uint32_t	align;
 	uint32_t	jmp_addr;
 	uint32_t	loader_offset;
+	uint32_t	offset_text;
 };
 
 typedef struct s_pack	t_pack;
@@ -39,10 +40,16 @@ uint32_t		p64_get_last_ptload(t_pack *packer);
 uint32_t		p64_get_last_secload(t_pack *packer);
 void			p64_change_headprog_flags(t_pack *packer);
 void			p64_change_header(t_pack *packer);
+uint32_t		p64_get_offset_text_load(t_pack *packer);
 
 /*
  * loader.s
 */
 void			loader(void);
+
+/*
+ * algo_crypt_xxtea.s
+*/
+void			crypt_xxtea(uint32_t *block, uint32_t len, uint32_t *key);
 
 #endif

@@ -3,7 +3,8 @@ SRC_NAME = main.c \
 			packer64.c \
 			pack64.c
 
-SRC_ASM = loader.s
+SRC_ASM = loader.s \
+			algo_crypt_xxtea.s
 
 OBJ_NAME = $(SRC_NAME:.c=.o)
 OBJ_ASM = $(SRC_ASM:.s=.o)
@@ -35,9 +36,6 @@ INC = $(addprefix -I,$(INC_PATH))
 SRCA = $(addprefix $(SRC_PATH),$(SRC_ASM))
 OBJA = $(addprefix $(OBJ_PATH),$(OBJ_ASM))
 
-all: $(NAME)
-
-
 $(NAME): $(OBJ) $(OBJA)
 	$(CC) $(CFLAGS) $(INC) -o $(NAME) $(OBJ) $(OBJA) $(CLIBS)
 
@@ -47,7 +45,7 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.c
 	@mkdir $(OBJ_PATH) 2> /dev/null || echo "" > /dev/null
 	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
-$(OBJA): $(SRCA)
+$(OBJ_PATH)%.o: $(SRC_PATH)%.s
 	$(AC) $(AFLAGS) -o $@ $<
 
 clean:
