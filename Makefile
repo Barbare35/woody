@@ -1,70 +1,64 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: mbarbari <mbarbari@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2016/04/07 16:55:33 by mbarbari          #+#    #+#              #
-#    Updated: 2017/04/11 13:52:46 by barbare          ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+SRC_NAME = main.c \
+			packer.c \
+			packer64.c \
+			pack64.c
 
-CC ?= clang
-CX ?= clang++
+SRC_ASM = loader.s \
+			algo_crypt_xxtea.s
+
+OBJ_NAME = $(SRC_NAME:.c=.o)
+OBJ_ASM = $(SRC_ASM:.s=.o)
 
 NAME = woody_woodpacker
 
-CFLAGS += -Wall -Wextra -Werror
+SRC_PATH = ./sources/
+OBJ_PATH = ./obj/
+INC_PATH = ./includes/
 
-SOURCES_FILES = ./sources
-HEADERS_FILES = ./includes
-OBJECTS_FILES = ./objects
+CC = gcc
+CFLAGS = -Wall -Werror -Wextra
+CLIBS =
 
-LIBSDIR = ../libs/libft
-LIBS = -L$(LIBSDIR) -lft
-LIBSNAME = libft.a
-LIBFT = $(LIBSDIR)/$(LIBSNAME)
+AC = nasm
+AFLAGS = -f elf64
 
-INC = -I./includes -I$(LIBSDIR)/include
+ifeq ($(DEBUG), basic)
+	CFLAGS += -g
+endif
+ifeq ($(DEBUG), all)
+	CFLAGS += -pg -g
+endif
 
-CLI_SRCS = 	$(SOURCES_FILES)/main.c \
+SRC = $(addprefix $(SRC_PATH),$(SRC_NAME))
+OBJ = $(addprefix $(OBJ_PATH),$(OBJ_NAME))
+INC = $(addprefix -I,$(INC_PATH))
 
-CLI_OBJS = $(patsubst $(SOURCES_FILES)/%.c,$(OBJECTS_FILES)/%.o,$(CLI_SRCS))
+SRCA = $(addprefix $(SRC_PATH),$(SRC_ASM))
+OBJA = $(addprefix $(OBJ_PATH),$(OBJ_ASM))
 
-SRC_INCLUDE = $(HEADERS_FILES)/woody.h \
-
-RM ?= rm -f
-MKDIR ?= mkdir
-CD ?= cd
+$(NAME): $(OBJ) $(OBJA)
+	$(CC) $(CFLAGS) $(INC) -o $(NAME) $(OBJ) $(OBJA) $(CLIBS)
 
 all: $(NAME)
 
-install:
-	mkdir -p $(SOURCES_FILES)
-	mkdir -p $(HEADERS_FILES)
-	mkdir -p $(OBJECTS_FILES)
+$(OBJ_PATH)%.o: $(SRC_PATH)%.c
+	@mkdir $(OBJ_PATH) 2> /dev/null || echo "" > /dev/null
+	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
 
-print-% : ; $(info $* is $(flavor $*) variable set to [$($*)]) @true
-
-$(NAME): $(LIBFT) $(CLI_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(INC) $(LIBS)
-
-$(OBJECTS_FILES)/%.o: $(SOURCES_FILES)/%.c $(SRC_INCLUDE)
-	$(MKDIR) -p $(dir $@)
-	$(CC) -c $(CFLAGS) $(INC) $< -o $@
-
-$(LIBFT):
-	$(MAKE) -C $(LIBSDIR)
+$(OBJ_PATH)%.o: $(SRC_PATH)%.s
+	$(AC) $(AFLAGS) -o $@ $<
 
 clean:
-	$(RM) $(CLI_OBJS)
+	rm -f $(OBJ)
+ifneq ($(OBJ_PATH), ./)
+	rm -rf $(OBJ_PATH)
+endif
 
 fclean: clean
-	$(RM) cli
-	$(RM) $(CLI_OBJS)
-	$(MAKE) -C $(LIBSDIR) fclean
+	rm -f $(NAME)
+
+mrproper: fclean
 
 re: fclean all
 
-.PHONY: clean fclean re all
+.PHONY: all clean fclean mrproper re
